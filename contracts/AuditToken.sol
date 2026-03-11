@@ -182,9 +182,9 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
 
     /**
      * @notice Désigne un nouveau minter délégué
-     * TODO [11] — Complétez les tags NatSpec (@dev, @param)
-     * @dev ???
-     * @param newMinter ???
+     * TODO [11] — Complétez les tags NatSpec (dev, param)
+     * @dev Seul le owner peut modifier le minter. `address(0)` révoque le minter.
+     * @param newMinter Adresse du nouveau minter délégué
      */
 
     // TODO [11] — Implémentez setMinter :
@@ -196,16 +196,18 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //       3. Émettre MinterUpdated(ancien, nouveau)
     //   💡 address(0) doit être accepté → permet de révoquer le minter
 
-    // function setMinter(???) ??? {
-    //     ???
-    // }
+    function setMinter(address newMinter) external onlyOwner {
+        address previousMinter = minter;
+        minter = newMinter;
+        emit MinterUpdated(previousMinter, newMinter);
+    }
 
     /**
      * @notice Crée de nouveaux tokens en faveur de `to`
-     * TODO [12] — Complétez les tags NatSpec (@dev, @param x2)
-     * @dev ???
-     * @param to     ???
-     * @param amount ???
+     * TODO [12] — Complétez les tags NatSpec (dev, param x2)
+     * @dev Callable uniquement par owner/minter quand le contrat n'est pas en pause. Respecte maxSupply.
+     * @param to     Adresse bénéficiaire des tokens mintés
+     * @param amount Quantité de tokens à minter (en wei)
      */
 
     // TODO [12] — Implémentez mint :
@@ -218,14 +220,23 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //   • Action : _mint(to, amount)
     //   • Event  : TokensMinted(to, amount)
 
-    // function mint(???) ??? {
-    //     ???
-    // }
+    function mint(address to, uint256 amount) external onlyMinterOrOwner whenNotPaused {
+        if (to == address(0)) revert ZeroAddress();
+        if (amount == 0) revert ZeroAmount();
+
+        uint256 available = maxSupply - totalSupply();
+        if (amount > available) {
+            revert MaxSupplyExceeded(amount, available);
+        }
+
+        _mint(to, amount);
+        emit TokensMinted(to, amount);
+    }
 
     /**
      * @notice Suspend tous les transferts (mode urgence)
-     * TODO [13] — Ajoutez @dev et implémentez pause()
-     * @dev ???
+     * TODO [13] — Ajoutez dev et implémentez pause()
+     * @dev Seul le owner peut activer la pause globale (circuit-breaker).
      */
 
     // TODO [13] — pause() et unpause() :
@@ -233,13 +244,13 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //   • Guard : onlyOwner
     //   • Délèguent respectivement à _pause() et _unpause() (hérités de Pausable)
 
-    // function pause() ??? {
-    //     ???
-    // }
+    function pause() external onlyOwner {
+        _pause();
+    }
 
-    // function unpause() ??? {
-    //     ???
-    // }
+    function unpause() external onlyOwner {
+        _unpause();
+    }
 
     // ─────────────────────────────────────────────
     //  View helpers
@@ -254,9 +265,9 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //   • Visibilité : external view
     //   • Retourne : maxSupply - totalSupply()
 
-    // function remainingMintable() ??? returns (???) {
-    //     ???
-    // }
+    function remainingMintable() external view returns (uint256) {
+        return maxSupply - totalSupply();
+    }
 
     // ─────────────────────────────────────────────
     //  Required overrides
@@ -273,7 +284,10 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //       super._update(from, to, value);
     //   }
 
-    // function _update(???) ??? {
-    //     ???
-    // }
+    function _update(address from, address to, uint256 value)
+        internal
+        override(ERC20, ERC20Pausable)
+    {
+        super._update(from, to, value);
+    }
 }
