@@ -180,32 +180,48 @@ describe("AuditToken", function () {
     // TODO [T9] — Vérifiez que TokensMinted event est émis
     it("should emit TokensMinted event", async function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = 25n * ONE_TOKEN;
+
+      await expect(token.connect(owner).mint(alice.address, amount))
+        .to.emit(token, "TokensMinted")
+        .withArgs(alice.address, amount);
     });
 
     // TODO [T10] — Vérifiez que le minter délégué peut minter
     //   Scénario : owner setMinter(alice), alice mint vers bob
     it("should let minter delegate mint", async function () {
       const { token, owner, alice, bob, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = 40n * ONE_TOKEN;
+
+      await token.connect(owner).setMinter(alice.address);
+      await token.connect(alice).mint(bob.address, amount);
+
+      expect(await token.balanceOf(bob.address)).to.equal(amount);
     });
 
     // TODO [T11] — Vérifiez que mint échoue si appelé par un inconnu (ni owner ni minter)
     it("should revert mint from unauthorized caller", async function () {
       const { token, alice, bob, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      await expect(
+        token.connect(alice).mint(bob.address, ONE_TOKEN)
+      ).to.be.revertedWithCustomError(token, "Unauthorized")
+        .withArgs(alice.address);
     });
 
     // TODO [T12] — Vérifiez que mint échoue vers address(0)
     it("should revert mint to zero address", async function () {
       const { token, owner, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      await expect(
+        token.connect(owner).mint(ethers.ZeroAddress, ONE_TOKEN)
+      ).to.be.revertedWithCustomError(token, "ZeroAddress");
     });
 
     // TODO [T13] — Vérifiez que mint échoue si amount == 0
     it("should revert mint of zero amount", async function () {
       const { token, owner, alice } = await loadFixture(deployFixture);
-      // ???
+      await expect(
+        token.connect(owner).mint(alice.address, 0)
+      ).to.be.revertedWithCustomError(token, "ZeroAmount");
     });
 
     // TODO [T14] — Vérifiez que mint échoue si on dépasse maxSupply
@@ -213,7 +229,11 @@ describe("AuditToken", function () {
     //      Essayez de minter MAX_SUPPLY tokens en plus → overflow !
     it("should revert when mint exceeds maxSupply", async function () {
       const { token, owner, alice, MAX_SUPPLY, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = MAX_SUPPLY * ONE_TOKEN;
+
+      await expect(
+        token.connect(owner).mint(alice.address, amount)
+      ).to.be.revertedWithCustomError(token, "MaxSupplyExceeded");
     });
 
     // ✅ EXEMPLE — Test de remainingMintable
