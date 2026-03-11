@@ -98,6 +98,13 @@ describe("AuditToken", function () {
         AuditToken.deploy("T", "T", 5000n, 100n) // 5000 > 100 → doit revert
       ).to.be.revertedWithCustomError(AuditToken, "MaxSupplyExceeded");
     });
+
+    it("should allow deployment with zero initial supply", async function () {
+      const AuditToken = await ethers.getContractFactory("AuditToken");
+      const token = await AuditToken.deploy("Zero", "ZER", 0n, 100n);
+
+      expect(await token.totalSupply()).to.equal(0);
+    });
   });
 
   // ══════════════════════════════════════════════
@@ -343,6 +350,17 @@ describe("AuditToken", function () {
       const { token, alice } = await loadFixture(deployFixture);
       await expect(
         token.connect(alice).pause()
+      ).to.be.revertedWithCustomError(token, "OwnableUnauthorizedAccount")
+        .withArgs(alice.address);
+    });
+
+    it("should revert unpause from non-owner", async function () {
+      const { token, owner, alice } = await loadFixture(deployFixture);
+
+      await token.connect(owner).pause();
+
+      await expect(
+        token.connect(alice).unpause()
       ).to.be.revertedWithCustomError(token, "OwnableUnauthorizedAccount")
         .withArgs(alice.address);
     });
