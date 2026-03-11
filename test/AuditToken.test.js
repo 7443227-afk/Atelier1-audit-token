@@ -368,13 +368,22 @@ describe("AuditToken", function () {
     // TODO [T21] — Vérifiez qu'on peut révoquer le minter (setMinter(address(0)))
     it("should allow revoking minter by setting to zero address", async function () {
       const { token, owner, alice } = await loadFixture(deployFixture);
-      // ???
+      await token.connect(owner).setMinter(alice.address);
+
+      await expect(token.connect(owner).setMinter(ethers.ZeroAddress))
+        .to.emit(token, "MinterUpdated")
+        .withArgs(alice.address, ethers.ZeroAddress);
+
+      expect(await token.minter()).to.equal(ethers.ZeroAddress);
     });
 
     // TODO [T22] — Vérifiez que setMinter échoue si appelé par un non-owner
     it("should revert setMinter from non-owner", async function () {
       const { token, alice, bob } = await loadFixture(deployFixture);
-      // ???
+      await expect(
+        token.connect(alice).setMinter(bob.address)
+      ).to.be.revertedWithCustomError(token, "OwnableUnauthorizedAccount")
+        .withArgs(alice.address);
     });
   });
 
@@ -438,7 +447,41 @@ describe("AuditToken", function () {
     //   💡 L'erreur s'appelle "ERC2612ExpiredSignature"
     it("should revert permit with expired deadline", async function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const nonce = await token.nonces(owner.address);
+      const deadline = 1n;
+      const amount = 100n * ONE_TOKEN;
+
+      const domain = {
+        name: await token.name(),
+        version: "1",
+        chainId: (await ethers.provider.getNetwork()).chainId,
+        verifyingContract: await token.getAddress(),
+      };
+
+      const types = {
+        Permit: [
+          { name: "owner", type: "address" },
+          { name: "spender", type: "address" },
+          { name: "value", type: "uint256" },
+          { name: "nonce", type: "uint256" },
+          { name: "deadline", type: "uint256" },
+        ],
+      };
+
+      const permitData = {
+        owner: owner.address,
+        spender: alice.address,
+        value: amount,
+        nonce,
+        deadline,
+      };
+
+      const sig = await owner.signTypedData(domain, types, permitData);
+      const { v, r, s } = ethers.Signature.from(sig);
+
+      await expect(
+        token.permit(owner.address, alice.address, amount, deadline, v, r, s)
+      ).to.be.revertedWithCustomError(token, "ERC2612ExpiredSignature");
     });
   });
 
@@ -462,14 +505,29 @@ describe("AuditToken", function () {
     //     totalSupply    = (1000 + 100 - 10) tokens = 1090 tokens
     it("full lifecycle: mint → transfer → burn", async function () {
       const { token, owner, alice, bob, INITIAL, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const mintAmount = 100n * ONE_TOKEN;
+      const transferAmount = 40n * ONE_TOKEN;
+      const burnAmount = 10n * ONE_TOKEN;
+
+      await token.connect(owner).mint(alice.address, mintAmount);
+      await token.connect(alice).transfer(bob.address, transferAmount);
+      await token.connect(bob).burn(burnAmount);
+
+      expect(await token.balanceOf(alice.address)).to.equal(60n * ONE_TOKEN);
+      expect(await token.balanceOf(bob.address)).to.equal(30n * ONE_TOKEN);
+      expect(await token.totalSupply()).to.equal((INITIAL + 100n - 10n) * ONE_TOKEN);
     });
 
     // TODO [T25] — BONUS : Vérifiez qu'on peut atteindre exactement maxSupply
     //   💡 remainingMintable() doit valoir 0 après
     it("should reach exactly maxSupply", async function () {
       const { token, owner, alice, INITIAL, MAX_SUPPLY, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const remaining = (MAX_SUPPLY - INITIAL) * ONE_TOKEN;
+
+      await token.connect(owner).mint(alice.address, remaining);
+
+      expect(await token.totalSupply()).to.equal(MAX_SUPPLY * ONE_TOKEN);
+      expect(await token.remainingMintable()).to.equal(0);
     });
   });
 });
