@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Guide de démarrage — Atelier 1</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;600;700;800&display=swap');
+
+:root {
+  --bg:         #0d0f12;
+  --panel:      #13161c;
+  --border:     #1f2433;
+  --border2:    #2a3045;
+  --amber:      #f59e0b;
+  --amber-dim:  rgba(245,158,11,.08);
+  --green:      #22c55e;
+  --green-dim:  rgba(34,197,94,.08);
+  --blue:       #38bdf8;
+  --blue-dim:   rgba(56,189,248,.08);
+  --red:        #f87171;
+  --red-dim:    rgba(248,113,113,.08);
+  --text:       #cbd5e1;
+  --muted:      #475569;
+  --white:      #f1f5f9;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+/* ── scan-line overlay ── */
+body::after {
+  content:'';
+  position:fixed;inset:0;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,.03) 2px, rgba(0,0,0,.03) 4px);
+  pointer-events:none;z-index:9999;
+}
+
+/* ── SIDEBAR NAV ── */
+.layout { display:flex; min-height:100vh; }
+
+aside {
+  width: 240px;
+  flex-shrink: 0;
+  background: var(--panel);
+  border-right: 1px solid var(--border);
+  padding: 32px 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.logo {
+  padding: 0 20px 28px;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 20px;
+}
+.logo-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--amber);
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 6px;
+}
+.logo-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--white);
+  line-height: 1.3;
+}
+
+.nav-section {
+  padding: 4px 0;
+}
+.nav-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 8px 20px 4px;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 20px;
+  font-size: 13px;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all .15s;
+  border-left: 2px solid transparent;
+  position: relative;
+}
+.nav-item:hover { color: var(--text); background: rgba(255,255,255,.02); }
+.nav-item.active { color: var(--amber); border-left-color: var(--amber); background: var(--amber-dim); }
+.nav-item .done-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--border2);
+  margin-left: auto;
+  flex-shrink: 0;
+  transition: background .2s;
+}
+.nav-item.done .done-dot { background: var(--green); }
+
+/* ── MAIN CONTENT ── */
+main {
+  flex: 1;
+  max-width: 780px;
+  padding: 48px 48px 120px;
+}
+
+@media(max-width:800px){
+  aside{display:none}
+  main{padding:32px 20px 80px}
+}
+
+/* ── PAGE HEADER ── */
+.page-header {
+  margin-bottom: 56px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid var(--border);
+}
+.eyebrow {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--amber);
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.eyebrow::before {
+  content: '';
+  display: inline-block;
+  width: 20px; height: 1px;
+  background: var(--amber);
+}
+h1 {
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 800;
+  color: var(--white);
+  line-height: 1.15;
+  letter-spacing: -.02em;
+  margin-bottom: 14px;
+}
+.page-desc {
+  color: var(--muted);
+  font-size: 15px;
+  max-width: 560px;
+  line-height: 1.7;
+}
+
+/* ── OVERALL PROGRESS ── */
+.overall-progress {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-top: 28px;
+  padding: 14px 18px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+.op-track {
+  flex: 1;
+  height: 4px;
+  background: var(--border2);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.op-fill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--amber), var(--green));
+  border-radius: 99px;
+  transition: width .5s ease;
+}
+.op-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--amber);
+  white-space: nowrap;
+}
+
+/* ── CHAPTER ── */
+.chapter {
+  margin-bottom: 64px;
+  scroll-margin-top: 32px;
+}
+
+h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--white);
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.chapter-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--amber);
+  background: var(--amber-dim);
+  border: 1px solid rgba(245,158,11,.2);
+  border-radius: 4px;
+  padding: 3px 8px;
+}
+
+/* ── STEP CARD ── */
+.step {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+  transition: border-color .2s;
+}
+.step.completed { border-color: rgba(34,197,94,.25); }
+.step.active-step { border-color: rgba(245,158,11,.3); }
+
+.step-head {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px 20px;
+  cursor: pointer;
+}
+.step-head:hover { background: rgba(255,255,255,.015); }
+
+.step-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px;
+  flex-shrink: 0;
+  background: var(--border);
+  border: 1px solid var(--border2);
+  transition: all .2s;
+}
+.step.completed .step-icon {
+  background: var(--green-dim);
+  border-color: rgba(34,197,94,.3);
+}
+
+.step-meta { flex: 1; }
+.step-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 2px;
+}
+.step-sub {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.step-status {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 3px 9px;
+  border-radius: 4px;
+  border: 1px solid var(--border2);
+  color: var(--muted);
+  white-space: nowrap;
+  align-self: flex-start;
+  margin-top: 3px;
+}
+.step.completed .step-status {
+  color: var(--green);
+  border-color: rgba(34,197,94,.3);
+  background: var(--green-dim);
+}
+
+.step-body {
+  padding: 0 20px 20px;
+  display: none;
+  border-top: 1px solid var(--border);
+}
+.step.open .step-body { display: block; padding-top: 18px; }
+
+/* ── CONTENT ELEMENTS ── */
+p { margin-bottom: 12px; font-size: 14px; color: var(--text); }
+p:last-child { margin-bottom: 0; }
+
+h3 {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--white);
+  margin: 18px 0 8px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+pre {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  background: #080a0e;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px 18px;
+  overflow-x: auto;
+  margin: 10px 0;
+  line-height: 1.7;
+  position: relative;
+}
+.copy-btn {
+  position: absolute;
+  top: 8px; right: 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  color: var(--muted);
+  background: var(--panel);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  padding: 3px 8px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.copy-btn:hover { color: var(--amber); border-color: var(--amber); }
+
+.cmd { color: var(--amber); }
+.comment { color: #3a4558; }
+.ok { color: var(--green); }
+.err { color: var(--red); }
+.path { color: var(--blue); }
+
+/* ── CALLOUTS ── */
+.callout {
+  border-radius: 8px;
+  padding: 13px 16px;
+  margin: 12px 0;
+  font-size: 13.5px;
+  line-height: 1.65;
+  border-left: 3px solid;
+}
+.callout-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  font-weight: 700;
+  margin-bottom: 5px;
+  display: block;
+}
+.tip   { background:var(--green-dim); border-color:var(--green); }
+.tip   .callout-label { color:var(--green); }
+.warn  { background:var(--amber-dim); border-color:var(--amber); }
+.warn  .callout-label { color:var(--amber); }
+.info  { background:var(--blue-dim);  border-color:var(--blue);  }
+.info  .callout-label { color:var(--blue); }
+.danger{ background:var(--red-dim);   border-color:var(--red);   }
+.danger .callout-label { color:var(--red); }
+
+/* ── OS TABS ── */
+.os-tabs { display:flex; gap:4px; margin-bottom:10px; }
+.os-tab {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 5px 14px;
+  border-radius: 5px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all .15s;
+}
+.os-tab.active { background:var(--amber-dim); border-color:var(--amber); color:var(--amber); }
+.os-content { display:none; }
+.os-content.active { display:block; }
+
+/* ── SCREENSHOT PLACEHOLDER ── */
+.screenshot {
+  background: #080a0e;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px;
+  margin: 12px 0;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+}
+.sc-titlebar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+.sc-dot { width:10px;height:10px;border-radius:50%; }
+.sc-url {
+  flex:1;
+  background: var(--panel);
+  border-radius: 4px;
+  padding: 3px 10px;
+  color: var(--muted);
+  font-size: 11px;
+  text-align: center;
+}
+
+/* ── DONE BUTTON ── */
+.done-btn {
+  margin-top: 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: 1px solid rgba(34,197,94,.3);
+  background: var(--green-dim);
+  color: var(--green);
+  cursor: pointer;
+  transition: all .15s;
+}
+.done-btn:hover { background: rgba(34,197,94,.15); }
+.step.completed .done-btn { opacity: .5; pointer-events:none; }
+.step.completed .done-btn::before { content:'✓ '; }
+
+/* ── FAQ ACCORDION ── */
+.faq-item {
+  border-bottom: 1px solid var(--border);
+}
+.faq-q {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 0;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--white);
+  gap: 12px;
+}
+.faq-q:hover { color: var(--amber); }
+.faq-arrow { color: var(--muted); font-size: 12px; transition: transform .2s; flex-shrink:0; }
+.faq-item.open .faq-arrow { transform: rotate(180deg); }
+.faq-a { display:none; padding: 0 0 16px; font-size:13.5px; color:var(--text); }
+.faq-item.open .faq-a { display:block; }
+
+/* ── FINAL BANNER ── */
+.final-banner {
+  background: linear-gradient(135deg, rgba(245,158,11,.08), rgba(34,197,94,.08));
+  border: 1px solid rgba(245,158,11,.2);
+  border-radius: 12px;
+  padding: 32px;
+  text-align: center;
+  margin-top: 48px;
+}
+.final-banner h2 { justify-content: center; margin-bottom: 10px; }
+.final-banner p { color: var(--muted); max-width: 480px; margin: 0 auto 20px; }
+.submit-btn {
+  display: inline-block;
+  background: var(--amber);
+  color: #000;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .05em;
+  padding: 12px 28px;
+  border-radius: 6px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: opacity .15s;
+}
+.submit-btn:hover { opacity:.85; }
+</style>
+</head>
+<body>
+
+<div class="layout">
+
+<!-- ── SIDEBAR ── -->
+<aside>
+  <div class="logo">
+    <div class="logo-tag">Atelier 1</div>
+    <div class="logo-title">Guide de<br>démarrage</div>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Prérequis</div>
+    <a class="nav-item" href="#ch-outils" data-chapter="ch-outils">
+      <span>🛠</span> Installer les outils
+      <span class="done-dot"></span>
+    </a>
+    <a class="nav-item" href="#ch-github" data-chapter="ch-github">
+      <span>🐙</span> Créer un compte GitHub
+      <span class="done-dot"></span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Démarrage</div>
+    <a class="nav-item" href="#ch-vscode" data-chapter="ch-vscode">
+      <span>💻</span> Ouvrir le projet
+      <span class="done-dot"></span>
+    </a>
+    <a class="nav-item" href="#ch-repo" data-chapter="ch-repo">
+      <span>📤</span> Créer le repo GitHub
+      <span class="done-dot"></span>
+    </a>
+    <a class="nav-item" href="#ch-npm" data-chapter="ch-npm">
+      <span>📦</span> Installer & compiler
+      <span class="done-dot"></span>
+    </a>
+  </div>
+
+  <div class="nav-section">
+    <div class="nav-label">Workflow</div>
+    <a class="nav-item" href="#ch-git" data-chapter="ch-git">
+      <span>🔄</span> Sauvegarder son travail
+      <span class="done-dot"></span>
+    </a>
+    <a class="nav-item" href="#ch-ci" data-chapter="ch-ci">
+      <span>🤖</span> CI/CD GitHub Actions
+      <span class="done-dot"></span>
+    </a>
+    <a class="nav-item" href="#ch-codecov" data-chapter="ch-codecov">
+      <span>📊</span> Badge de coverage
+      <span class="done-dot"></span>
+    </a>
+    <a class="nav-item" href="#ch-faq" data-chapter="ch-faq">
+      <span>❓</span> Problèmes fréquents
+      <span class="done-dot"></span>
+    </a>
+  </div>
+</aside>
+
+<!-- ── MAIN ── -->
+<main>
+
+  <!-- HEADER -->
+  <div class="page-header">
+    <div class="eyebrow">Guide complet pour démarrer</div>
+    <h1>Tout ce dont vous avez besoin,<br>expliqué pas à pas</h1>
+    <p class="page-desc">
+      Vous n'avez jamais utilisé GitHub, le terminal, ou Node.js ?
+      Ce guide vous accompagne de l'installation jusqu'à la soumission finale.
+      Chaque étape est indépendante — cochez au fur et à mesure.
+    </p>
+    <div class="overall-progress">
+      <div class="op-track"><div class="op-fill" id="opFill"></div></div>
+      <div class="op-label" id="opLabel">0 / 18 étapes</div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 1 — OUTILS                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-outils">
+    <h2><span class="chapter-num">01</span> Installer les outils</h2>
+
+    <!-- Node.js -->
+    <div class="step" id="s-node">
+      <div class="step-head" onclick="toggleStep('s-node')">
+        <div class="step-icon">⬡</div>
+        <div class="step-meta">
+          <div class="step-title">Installer Node.js (version 20)</div>
+          <div class="step-sub">Le moteur JavaScript qui fait tourner Hardhat</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>Node.js est nécessaire pour exécuter tous les outils Hardhat. Installez la version <strong>LTS 20</strong>.</p>
+
+        <div class="os-tabs">
+          <button class="os-tab active" onclick="switchOS(this,'node')">Windows</button>
+          <button class="os-tab" onclick="switchOS(this,'node')">macOS</button>
+          <button class="os-tab" onclick="switchOS(this,'node')">Linux</button>
+        </div>
+
+        <div class="os-content active" data-os="node-Windows">
+          <p>1. Allez sur <strong>nodejs.org</strong> → cliquez sur le bouton vert <strong>"LTS"</strong><br>
+          2. Lancez le fichier .msi téléchargé, cliquez "Next" partout, laissez toutes les options par défaut<br>
+          3. Redémarrez votre ordinateur après l'installation</p>
+        </div>
+        <div class="os-content" data-os="node-macOS">
+          <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># Option 1 — Homebrew (recommandé si vous l'avez)</span>
+<span class="cmd">brew install node@20</span>
+
+<span class="comment"># Option 2 — Téléchargement direct</span>
+<span class="comment"># Allez sur nodejs.org → téléchargez le .pkg LTS → installez</span></pre>
+        </div>
+        <div class="os-content" data-os="node-Linux">
+          <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt-get install -y nodejs</span></pre>
+        </div>
+
+        <h3>Vérifier l'installation</h3>
+        <p>Ouvrez un terminal (ou PowerShell sur Windows) et tapez :</p>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">node --version</span>
+<span class="comment"># Vous devez voir quelque chose comme :</span>
+<span class="ok">v20.11.0</span>
+
+<span class="cmd">npm --version</span>
+<span class="ok">10.2.4</span></pre>
+
+        <div class="callout warn">
+          <span class="callout-label">⚠️ Si la commande n'est pas reconnue</span>
+          Sur Windows, fermez PowerShell et rouvrez-le. Si le problème persiste, redémarrez l'ordinateur.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-node', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+
+    <!-- Git -->
+    <div class="step" id="s-git-install">
+      <div class="step-head" onclick="toggleStep('s-git-install')">
+        <div class="step-icon">🌿</div>
+        <div class="step-meta">
+          <div class="step-title">Installer Git</div>
+          <div class="step-sub">L'outil de versioning qui synchronise votre code avec GitHub</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <div class="os-tabs">
+          <button class="os-tab active" onclick="switchOS(this,'git-install')">Windows</button>
+          <button class="os-tab" onclick="switchOS(this,'git-install')">macOS</button>
+          <button class="os-tab" onclick="switchOS(this,'git-install')">Linux</button>
+        </div>
+
+        <div class="os-content active" data-os="git-install-Windows">
+          <p>1. Allez sur <strong>git-scm.com</strong> → cliquez "Download for Windows"<br>
+          2. Lancez le .exe → laissez toutes les options par défaut (cliquez "Next" partout)<br>
+          3. À la fin, <strong>cochez "Launch Git Bash"</strong> pour tester</p>
+        </div>
+        <div class="os-content" data-os="git-install-macOS">
+          <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># Si vous avez Homebrew :</span>
+<span class="cmd">brew install git</span>
+
+<span class="comment"># Sinon, Git s'installe automatiquement quand vous tapez :</span>
+<span class="cmd">git --version</span>
+<span class="comment"># macOS vous proposera d'installer les "Command Line Tools"</span></pre>
+        </div>
+        <div class="os-content" data-os="git-install-Linux">
+          <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">sudo apt-get install git</span></pre>
+        </div>
+
+        <h3>Configurer votre identité Git</h3>
+        <p>Git a besoin de savoir qui vous êtes pour signer vos commits. Faites ça une seule fois :</p>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># Remplacez par vos vraies informations :</span>
+<span class="cmd">git config --global user.name "Prénom Nom"</span>
+<span class="cmd">git config --global user.email "votre@email.com"</span></pre>
+
+        <h3>Vérifier</h3>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">git --version</span>
+<span class="ok">git version 2.44.0</span></pre>
+
+        <button class="done-btn" onclick="markDone('s-git-install', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+
+    <!-- VS Code -->
+    <div class="step" id="s-vscode-install">
+      <div class="step-head" onclick="toggleStep('s-vscode-install')">
+        <div class="step-icon">💡</div>
+        <div class="step-meta">
+          <div class="step-title">Installer VS Code</div>
+          <div class="step-sub">L'éditeur de code recommandé pour ce projet</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>1. Allez sur <strong>code.visualstudio.com</strong><br>
+        2. Téléchargez et installez la version pour votre système</p>
+
+        <h3>Extensions à installer dans VS Code</h3>
+        <p>Ouvrez VS Code → cliquez sur l'icône Extensions (carré à gauche) → installez ces deux extensions :</p>
+        <pre><span class="ok">Solidity</span>               <span class="comment">← par Nomic Foundation (coloration syntaxique Solidity)</span>
+<span class="ok">Prettier - Code formatter</span>  <span class="comment">← formatage automatique du code</span></pre>
+
+        <div class="callout tip">
+          <span class="callout-label">💡 Astuce</span>
+          Dans VS Code, le terminal intégré s'ouvre avec <strong>Ctrl+`</strong> (Windows/Linux) ou <strong>Cmd+`</strong> (Mac). Vous n'avez pas besoin d'ouvrir un terminal séparé.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-vscode-install', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 2 — GITHUB                        -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-github">
+    <h2><span class="chapter-num">02</span> Créer un compte GitHub</h2>
+
+    <div class="step" id="s-github-account">
+      <div class="step-head" onclick="toggleStep('s-github-account')">
+        <div class="step-icon">🐙</div>
+        <div class="step-meta">
+          <div class="step-title">Créer votre compte GitHub</div>
+          <div class="step-sub">La plateforme où vous publierez votre portfolio</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>Si vous avez déjà un compte GitHub, passez directement à l'étape suivante.</p>
+
+        <p>1. Allez sur <strong>github.com</strong><br>
+        2. Cliquez <strong>"Sign up"</strong><br>
+        3. Choisissez un username professionnel — il apparaîtra dans l'URL de votre portfolio<br>
+        4. Vérifiez votre email</p>
+
+        <div class="callout info">
+          <span class="callout-label">📌 Conseil username</span>
+          Choisissez un username propre et professionnel : <code>prenom-nom</code> ou <code>prenomnom</code>.
+          Ce sera visible par les recruteurs qui liront votre portfolio.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-github-account', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+
+    <div class="step" id="s-github-ssh">
+      <div class="step-head" onclick="toggleStep('s-github-ssh')">
+        <div class="step-icon">🔑</div>
+        <div class="step-meta">
+          <div class="step-title">Connecter Git à votre compte GitHub</div>
+          <div class="step-sub">Pour pouvoir pousser du code sans retaper votre mot de passe</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>Il y a deux méthodes. Prenez la plus simple pour vous :</p>
+
+        <h3>Méthode A — HTTPS avec token (plus simple)</h3>
+        <p>1. Sur GitHub → cliquez sur votre avatar → <strong>Settings</strong><br>
+        2. Dans le menu gauche → <strong>Developer settings</strong> → <strong>Personal access tokens</strong> → <strong>Tokens (classic)</strong><br>
+        3. Cliquez <strong>"Generate new token (classic)"</strong><br>
+        4. Donnez-lui un nom, cochez <strong>"repo"</strong>, cliquez "Generate token"<br>
+        5. <strong>Copiez le token maintenant</strong> (vous ne pourrez plus le voir après)</p>
+
+        <p>Quand Git vous demande un mot de passe, collez ce token à la place.</p>
+
+        <h3>Méthode B — SSH (recommandée pour travailler confortablement)</h3>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># 1. Générer une clé SSH (appuyez sur Entrée 3 fois)</span>
+<span class="cmd">ssh-keygen -t ed25519 -C "votre@email.com"</span>
+
+<span class="comment"># 2. Copier la clé publique</span>
+<span class="comment"># Sur Mac/Linux :</span>
+<span class="cmd">cat ~/.ssh/id_ed25519.pub</span>
+<span class="comment"># Sur Windows (PowerShell) :</span>
+<span class="cmd">type $env:USERPROFILE\.ssh\id_ed25519.pub</span></pre>
+
+        <p>3. Copiez le texte affiché (commence par <code>ssh-ed25519</code>)<br>
+        4. Sur GitHub → Settings → <strong>SSH and GPG keys</strong> → <strong>"New SSH key"</strong><br>
+        5. Collez la clé → cliquez "Add SSH key"</p>
+
+        <h3>Vérifier la connexion</h3>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">ssh -T git@github.com</span>
+<span class="ok">Hi votre-username! You've successfully authenticated.</span></pre>
+
+        <button class="done-btn" onclick="markDone('s-github-ssh', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 3 — OUVRIR LE PROJET              -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-vscode">
+    <h2><span class="chapter-num">03</span> Ouvrir le projet dans VS Code</h2>
+
+    <div class="step" id="s-unzip">
+      <div class="step-head" onclick="toggleStep('s-unzip')">
+        <div class="step-icon">📦</div>
+        <div class="step-meta">
+          <div class="step-title">Dézipper et ouvrir le dossier</div>
+          <div class="step-sub">Extraire les fichiers du starter kit</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>1. Localisez le fichier <strong>atelier1-starter.zip</strong> que vous avez téléchargé<br>
+        2. Faites un clic droit dessus → <strong>"Extraire tout"</strong> (Windows) ou double-clic (Mac)<br>
+        3. Choisissez un emplacement facile à retrouver, par exemple votre Bureau ou <code>Documents/projets/</code></p>
+
+        <h3>Ouvrir dans VS Code</h3>
+        <p><strong>Méthode recommandée :</strong> glissez-déposez le dossier <code>atelier1-starter</code> sur l'icône de VS Code.</p>
+        <p><strong>Ou depuis le terminal :</strong></p>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># Naviguez jusqu'au dossier (adaptez le chemin)</span>
+<span class="cmd">cd Desktop/atelier1-starter</span>
+<span class="comment"># puis :</span>
+<span class="cmd">code .</span>         <span class="comment"># ouvre VS Code dans ce dossier</span></pre>
+
+        <div class="callout tip">
+          <span class="callout-label">💡 Vous devez voir ceci dans VS Code</span>
+          Dans le panneau gauche (Explorateur de fichiers), vous devez voir les dossiers
+          <code>contracts/</code>, <code>test/</code>, <code>scripts/</code> et les fichiers
+          <code>LISEZMOI.md</code>, <code>package.json</code>, etc.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-unzip', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 4 — CRÉER LE REPO GITHUB          -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-repo">
+    <h2><span class="chapter-num">04</span> Créer votre repo GitHub</h2>
+    <p style="margin-bottom:20px;color:var(--muted)">Faites cela <strong>avant de coder</strong>. Votre repo est l'endroit où votre travail sera évalué.</p>
+
+    <div class="step" id="s-new-repo">
+      <div class="step-head" onclick="toggleStep('s-new-repo')">
+        <div class="step-icon">🆕</div>
+        <div class="step-meta">
+          <div class="step-title">Créer le repo sur github.com</div>
+          <div class="step-sub">Le dépôt distant qui recevra votre code</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>1. Connectez-vous sur <strong>github.com</strong><br>
+        2. Cliquez le bouton <strong>"+"</strong> en haut à droite → <strong>"New repository"</strong></p>
+
+        <div class="screenshot">
+          <div class="sc-titlebar">
+            <div class="sc-dot" style="background:#ff5f56"></div>
+            <div class="sc-dot" style="background:#ffbd2e"></div>
+            <div class="sc-dot" style="background:#27c93f"></div>
+            <div class="sc-url">github.com/new</div>
+          </div>
+          <pre style="background:none;border:none;padding:0;margin:0;font-size:11px">
+  <span class="ok">Repository name</span>
+  ┌─────────────────────────────────────────┐
+  │ atelier1-audit-token                    │  ← tapez ce nom
+  └─────────────────────────────────────────┘
+
+  <span class="ok">Visibility</span>
+  ● Public    ← <span style="color:var(--amber)">obligatoire</span> pour les badges CI
+  ○ Private
+
+  <span class="comment">Initialize this repository with:</span>
+  ☐ Add a README file      ← <span style="color:var(--red)">décochez</span> (on le crée nous-mêmes)
+  ☐ Add .gitignore         ← <span style="color:var(--red)">décochez</span>
+  ☐ Choose a license       ← <span style="color:var(--red)">décochez</span>
+
+  [ Create repository ]   ← cliquez ici</pre>
+        </div>
+
+        <div class="callout warn">
+          <span class="callout-label">⚠️ Important</span>
+          Le repo doit être <strong>Public</strong>. S'il est privé, le badge CI et le badge Coverage ne fonctionneront pas et votre travail ne pourra pas être évalué.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-new-repo', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+
+    <div class="step" id="s-push">
+      <div class="step-head" onclick="toggleStep('s-push')">
+        <div class="step-icon">📤</div>
+        <div class="step-meta">
+          <div class="step-title">Pousser vos fichiers vers GitHub</div>
+          <div class="step-sub">Connecter votre dossier local au repo distant</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p>Dans le terminal VS Code (ou votre terminal), assurez-vous d'être dans le bon dossier :</p>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">pwd</span>      <span class="comment"># doit afficher le chemin vers atelier1-starter</span>
+<span class="cmd">ls</span>       <span class="comment"># doit afficher : contracts/ test/ package.json etc.</span></pre>
+
+        <p>Puis exécutez ces commandes <strong>dans l'ordre</strong> :</p>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># 1. Initialiser git dans ce dossier</span>
+<span class="cmd">git init</span>
+
+<span class="comment"># 2. Ajouter tous les fichiers</span>
+<span class="cmd">git add .</span>
+
+<span class="comment"># 3. Créer le premier commit</span>
+<span class="cmd">git commit -m "feat: initial starter kit"</span>
+
+<span class="comment"># 4. Connecter à GitHub (remplacez VOTRE_USERNAME)</span>
+<span class="cmd">git remote add origin https://github.com/VOTRE_USERNAME/atelier1-audit-token.git</span>
+
+<span class="comment"># 5. Pousser</span>
+<span class="cmd">git branch -M main</span>
+<span class="cmd">git push -u origin main</span></pre>
+
+        <div class="callout tip">
+          <span class="callout-label">✅ Succès</span>
+          Si tout s'est bien passé, allez sur votre repo GitHub dans le navigateur et rechargez la page.
+          Vous devez voir vos fichiers apparaître. Allez ensuite dans l'onglet <strong>"Actions"</strong> —
+          vous verrez un workflow démarrer automatiquement (il sera rouge pour l'instant, c'est normal).
+        </div>
+
+        <div class="callout danger">
+          <span class="callout-label">❌ Erreur "Permission denied"</span>
+          Si vous voyez cette erreur, revenez à l'étape "Connecter Git à GitHub" et vérifiez votre token ou votre clé SSH.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-push', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 5 — NPM                           -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-npm">
+    <h2><span class="chapter-num">05</span> Installer les dépendances & compiler</h2>
+
+    <div class="step" id="s-npm-install">
+      <div class="step-head" onclick="toggleStep('s-npm-install')">
+        <div class="step-icon">📦</div>
+        <div class="step-meta">
+          <div class="step-title">npm install — installer Hardhat et OpenZeppelin</div>
+          <div class="step-sub">Télécharge tous les outils nécessaires (~2 min)</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">npm install</span>
+
+<span class="comment"># Attendez... vous verrez défiler des lignes, c'est normal</span>
+<span class="ok">added 412 packages in 47s</span></pre>
+
+        <p>Cette commande lit le fichier <code>package.json</code> et télécharge automatiquement Hardhat, OpenZeppelin, et tous les outils nécessaires dans un dossier <code>node_modules/</code>.</p>
+
+        <div class="callout info">
+          <span class="callout-label">📌 node_modules est dans .gitignore</span>
+          Ce dossier peut peser 200 Mo. C'est pourquoi il est listé dans <code>.gitignore</code> — il ne sera jamais envoyé sur GitHub. Chaque développeur le recrée avec <code>npm install</code>.
+        </div>
+
+        <button class="done-btn" onclick="markDone('s-npm-install', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+
+    <div class="step" id="s-compile">
+      <div class="step-head" onclick="toggleStep('s-compile')">
+        <div class="step-icon">⚙️</div>
+        <div class="step-meta">
+          <div class="step-title">Compiler le contrat</div>
+          <div class="step-sub">Vérifier que votre code Solidity ne contient pas d'erreurs de syntaxe</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="cmd">npm run compile</span></pre>
+
+        <p>Au début, puisque le contrat est vide (plein de TODO commentés), vous verrez des erreurs. <strong>C'est attendu.</strong> Au fur et à mesure que vous complétez les TODO, recompilez pour vérifier votre progression.</p>
+
+        <p>Quand tout est bon, vous verrez :</p>
+        <pre><span class="ok">Compiled 1 Solidity file successfully (evm target: paris).</span></pre>
+
+        <button class="done-btn" onclick="markDone('s-compile', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 6 — WORKFLOW GIT                  -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-git">
+    <h2><span class="chapter-num">06</span> Sauvegarder son travail avec Git</h2>
+
+    <div class="step" id="s-git-workflow">
+      <div class="step-head" onclick="toggleStep('s-git-workflow')">
+        <div class="step-icon">🔄</div>
+        <div class="step-meta">
+          <div class="step-title">Les 3 commandes Git du quotidien</div>
+          <div class="step-sub">add → commit → push : à faire régulièrement pendant l'atelier</div>
+        </div>
+        <div class="step-status">À lire</div>
+      </div>
+      <div class="step-body">
+        <p>Pensez à Git comme à un système de <strong>points de sauvegarde</strong> dans un jeu vidéo. Après chaque avancée significative, sauvegardez :</p>
+
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button><span class="comment"># Étape 1 — Voir ce qui a changé</span>
+<span class="cmd">git status</span>
+
+<span class="comment"># Étape 2 — Sélectionner les fichiers à sauvegarder</span>
+<span class="cmd">git add .</span>          <span class="comment"># le point = tous les fichiers modifiés</span>
+
+<span class="comment"># Étape 3 — Créer le point de sauvegarde avec un message</span>
+<span class="cmd">git commit -m "feat: complete TODO 1-5 (imports and state variables)"</span>
+
+<span class="comment"># Étape 4 — Envoyer vers GitHub</span>
+<span class="cmd">git push</span></pre>
+
+        <div class="callout tip">
+          <span class="callout-label">💡 Quand pusher ?</span>
+          Poussez après chaque série de TODO complétés, ou au minimum à la fin de chaque session de travail.
+          Chaque push déclenche la CI automatiquement.
+        </div>
+
+        <h3>Messages de commit recommandés</h3>
+        <pre><span class="cmd">git commit -m "feat: complete contract TODO 1-10"</span>
+<span class="cmd">git commit -m "test: add tests T1-T15"</span>
+<span class="cmd">git commit -m "deploy: add contract address to README"</span>
+<span class="cmd">git commit -m "docs: complete NatSpec"</span></pre>
+
+        <button class="done-btn" onclick="markDone('s-git-workflow', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 7 — CI/CD                         -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-ci">
+    <h2><span class="chapter-num">07</span> Comprendre la CI/CD</h2>
+
+    <div class="step" id="s-ci-understand">
+      <div class="step-head" onclick="toggleStep('s-ci-understand')">
+        <div class="step-icon">🤖</div>
+        <div class="step-meta">
+          <div class="step-title">Ce que fait GitHub Actions automatiquement</div>
+          <div class="step-sub">À chaque push, GitHub exécute vos tests pour vous</div>
+        </div>
+        <div class="step-status">À lire</div>
+      </div>
+      <div class="step-body">
+        <p>Le fichier <code>.github/workflows/ci.yml</code> est déjà configuré. À chaque fois que vous faites un <code>git push</code>, GitHub :</p>
+
+        <pre><span class="ok">✓ Installe Node.js et les dépendances</span>
+<span class="ok">✓ Compile le contrat</span>
+<span class="ok">✓ Lance tous vos tests</span>
+<span class="ok">✓ Génère le rapport de coverage</span>
+<span class="ok">✓ Envoie le résultat à Codecov</span></pre>
+
+        <h3>Voir les résultats</h3>
+        <p>1. Sur votre repo GitHub → onglet <strong>"Actions"</strong><br>
+        2. Vous voyez la liste de vos pipelines<br>
+        3. Cliquez sur un pipeline pour voir les détails</p>
+
+        <div class="screenshot">
+          <div class="sc-titlebar">
+            <div class="sc-dot" style="background:#ff5f56"></div>
+            <div class="sc-dot" style="background:#ffbd2e"></div>
+            <div class="sc-dot" style="background:#27c93f"></div>
+            <div class="sc-url">github.com/vous/atelier1-audit-token/actions</div>
+          </div>
+          <pre style="background:none;border:none;padding:0;margin:0;font-size:11px">
+  <span style="color:#f87171">● feat: initial starter kit</span>   <span class="comment">← rouge = tests échouent (normal au début)</span>
+  <span style="color:#f59e0b">● feat: complete TODO 1-10</span>     <span class="comment">← jaune = en cours</span>
+  <span class="ok">● feat: complete TODO 1-15</span>     <span class="comment">← vert = tous les tests passent ✓</span></pre>
+        </div>
+
+        <h3>Ajouter le badge CI dans votre README</h3>
+        <p>Une fois que votre CI passe en vert, copiez ce code dans votre <code>README.md</code> (remplacez les valeurs) :</p>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button>[![CI](https://github.com/VOTRE_USERNAME/atelier1-audit-token/actions/workflows/ci.yml/badge.svg)](https://github.com/VOTRE_USERNAME/atelier1-audit-token/actions)</pre>
+
+        <button class="done-btn" onclick="markDone('s-ci-understand', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 8 — CODECOV                       -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-codecov">
+    <h2><span class="chapter-num">08</span> Configurer le badge de Coverage</h2>
+
+    <div class="step" id="s-codecov">
+      <div class="step-head" onclick="toggleStep('s-codecov')">
+        <div class="step-icon">📊</div>
+        <div class="step-meta">
+          <div class="step-title">Connecter Codecov à votre repo</div>
+          <div class="step-sub">Pour afficher le pourcentage de coverage dans votre README</div>
+        </div>
+        <div class="step-status">À faire</div>
+      </div>
+      <div class="step-body">
+        <p><strong>Codecov</strong> est un service gratuit qui lit le rapport de coverage généré par vos tests et affiche un badge dans votre README.</p>
+
+        <h3>Créer un compte Codecov</h3>
+        <p>1. Allez sur <strong>codecov.io</strong><br>
+        2. Cliquez <strong>"Sign up with GitHub"</strong> → autorisez Codecov<br>
+        3. Dans le tableau de bord Codecov → cliquez <strong>"Add new repository"</strong><br>
+        4. Sélectionnez <code>atelier1-audit-token</code></p>
+
+        <h3>Copier le token Codecov dans GitHub Secrets</h3>
+        <p>Codecov vous donne un token. Il faut le mettre dans GitHub pour que la CI puisse l'utiliser :</p>
+        <p>1. Sur Codecov → copiez le token (<code>CODECOV_TOKEN</code>)<br>
+        2. Sur votre repo GitHub → <strong>Settings</strong> → <strong>Secrets and variables</strong> → <strong>Actions</strong><br>
+        3. Cliquez <strong>"New repository secret"</strong><br>
+        4. Name : <code>CODECOV_TOKEN</code>, Value : collez le token<br>
+        5. Cliquez "Add secret"</p>
+
+        <div class="callout tip">
+          <span class="callout-label">💡 Après votre prochain push</span>
+          La CI uploadera automatiquement le rapport de coverage vers Codecov.
+          Le badge s'activera dans les minutes qui suivent.
+        </div>
+
+        <h3>Ajouter le badge dans votre README</h3>
+        <pre><button class="copy-btn" onclick="copy(this)">copier</button>[![Coverage](https://codecov.io/gh/VOTRE_USERNAME/atelier1-audit-token/branch/main/graph/badge.svg)](https://codecov.io/gh/VOTRE_USERNAME/atelier1-audit-token)</pre>
+
+        <button class="done-btn" onclick="markDone('s-codecov', this)">Marquer comme terminé</button>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ══════════════════════════════════════════ -->
+  <!-- CHAPITRE 9 — FAQ                           -->
+  <!-- ══════════════════════════════════════════ -->
+  <div class="chapter" id="ch-faq">
+    <h2><span class="chapter-num">09</span> Problèmes fréquents</h2>
+
+    <div class="card" style="background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:0 20px">
+
+      <div class="faq-item" id="faq1">
+        <div class="faq-q" onclick="toggleFaq('faq1')">
+          <span>❌ "npm : command not found" ou "npm n'est pas reconnu"</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Node.js n'est pas installé ou pas dans le PATH. Solutions :<br><br>
+          1. Vérifiez que vous avez bien installé Node.js (étape 1)<br>
+          2. Fermez et rouvrez votre terminal<br>
+          3. Sur Windows : redémarrez l'ordinateur<br>
+          4. Sur Mac : relancez VS Code après l'installation de Node
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq2">
+        <div class="faq-q" onclick="toggleFaq('faq2')">
+          <span>❌ "git push" demande un mot de passe en boucle</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Vous utilisez HTTPS mais n'avez pas de token configuré. Deux solutions :<br><br>
+          <strong>Solution rapide :</strong> quand Git demande le mot de passe, collez votre Personal Access Token (pas votre mot de passe GitHub).<br><br>
+          <strong>Solution durable :</strong> configurez la méthode SSH (voir l'étape "Connecter Git à GitHub").
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq3">
+        <div class="faq-q" onclick="toggleFaq('faq3')">
+          <span>❌ La CI est rouge et affiche "Compilation failed"</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Normal tant que le contrat n'est pas complet ! La CI devient verte une fois que :<br><br>
+          1. Tous les TODO du contrat sont implémentés<br>
+          2. Le contrat compile sans erreur (<code>npm run compile</code> → 0 erreurs)<br>
+          3. Tous les tests passent (<code>npm test</code> → tous verts)
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq4">
+        <div class="faq-q" onclick="toggleFaq('faq4')">
+          <span>❌ "ENOENT: .env file not found" lors du déploiement</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Vous n'avez pas créé le fichier <code>.env</code>. Faites :<br><br>
+          <code>cp .env.example .env</code><br><br>
+          Puis ouvrez <code>.env</code> et remplissez les variables (PRIVATE_KEY, SEPOLIA_RPC_URL, ETHERSCAN_API_KEY).
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq5">
+        <div class="faq-q" onclick="toggleFaq('faq5')">
+          <span>❌ "Insufficient funds" lors du déploiement</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Votre compte de test n'a pas assez d'ETH Sepolia. Obtenez-en gratuitement sur :<br><br>
+          • <a href="https://sepoliafaucet.com" target="_blank" style="color:var(--blue)">sepoliafaucet.com</a><br>
+          • <a href="https://faucets.chain.link/sepolia" target="_blank" style="color:var(--blue)">faucets.chain.link/sepolia</a><br><br>
+          Attendez 1-2 minutes après la réception avant de retenter.
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq6">
+        <div class="faq-q" onclick="toggleFaq('faq6')">
+          <span>❌ Le badge CI reste gris après le push</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Le badge peut mettre 1-2 minutes à s'afficher.<br><br>
+          Si après 5 minutes il est toujours gris :<br>
+          1. Vérifiez que votre repo est bien <strong>Public</strong><br>
+          2. Allez dans l'onglet Actions de votre repo et vérifiez qu'un workflow a bien tourné<br>
+          3. Copiez l'URL du badge depuis Actions → votre workflow → le bouton "···" → "Create status badge"
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq7">
+        <div class="faq-q" onclick="toggleFaq('faq7')">
+          <span>❌ "Already Verified" lors du déploiement</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Ce n'est <strong>pas une erreur</strong>. Cela signifie que votre contrat est déjà vérifié sur Etherscan. Vous pouvez ignorer ce message.
+        </div>
+      </div>
+
+      <div class="faq-item" id="faq8">
+        <div class="faq-q" onclick="toggleFaq('faq8')">
+          <span>🤔 Je ne comprends pas un TODO — comment avoir de l'aide ?</span>
+          <span class="faq-arrow">▼</span>
+        </div>
+        <div class="faq-a">
+          Dans l'ordre :<br><br>
+          1. <strong>Relisez l'indice</strong> dans le fichier .sol ou .test.js<br>
+          2. <strong>Ouvrez le guide interactif</strong> (<code>atelier1-apprenant.html</code>) — chaque TODO y est expliqué<br>
+          3. <strong>Cherchez sur la doc OpenZeppelin</strong> : docs.openzeppelin.com<br>
+          4. <strong>Cherchez sur la doc Hardhat</strong> : hardhat.org/docs<br>
+          5. En dernier recours, posez votre question avec le message d'erreur exact
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <!-- FINAL BANNER -->
+  <div class="final-banner">
+    <h2>🏆 Prêt à livrer ?</h2>
+    <p>Quand votre CI est verte, votre contrat déployé, et les badges dans votre README, soumettez l'URL de votre repo.</p>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--amber);background:var(--amber-dim);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:12px 20px;margin:16px auto;max-width:440px">
+      https://github.com/VOTRE_USERNAME/atelier1-audit-token
+    </div>
+    <p style="font-size:13px">C'est l'URL que vous soumettez. Rien d'autre.</p>
+  </div>
+
+</main>
+</div>
+
+<script>
+const S = JSON.parse(localStorage.getItem('guide-setup') || '{}');
+const TOTAL_STEPS = document.querySelectorAll('.done-btn').length;
+
+function save(){ localStorage.setItem('guide-setup', JSON.stringify(S)); }
+
+function toggleStep(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+function markDone(id, btn){
+  const el = document.getElementById(id);
+  el.classList.add('completed');
+  el.classList.remove('open');
+  const status = el.querySelector('.step-status');
+  if(status){ status.textContent = 'Terminé ✓'; }
+  S[id] = true;
+  save();
+  updateProgress();
+  updateNav();
+}
+
+function updateProgress(){
+  const done = Object.keys(S).filter(k => S[k]).length;
+  const pct  = Math.round(done / TOTAL_STEPS * 100);
+  document.getElementById('opFill').style.width = pct + '%';
+  document.getElementById('opLabel').textContent = done + ' / ' + TOTAL_STEPS + ' étapes';
+}
+
+function updateNav(){
+  document.querySelectorAll('.nav-item').forEach(a => {
+    const ch = a.dataset.chapter;
+    if(!ch) return;
+    const chEl = document.getElementById(ch);
+    if(!chEl) return;
+    const steps = chEl.querySelectorAll('.step');
+    const doneCt = chEl.querySelectorAll('.step.completed').length;
+    const dot = a.querySelector('.done-dot');
+    if(dot && steps.length > 0 && doneCt === steps.length){
+      a.classList.add('done');
+    }
+  });
+}
+
+// OS tabs
+function switchOS(btn, group){
+  const parent = btn.closest('.step-body');
+  parent.querySelectorAll('.os-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  const os = btn.textContent;
+  parent.querySelectorAll('.os-content').forEach(c => {
+    c.classList.toggle('active', c.dataset.os === `${group}-${os}`);
+  });
+}
+
+// FAQ
+function toggleFaq(id){
+  const el = document.getElementById(id);
+  el.classList.toggle('open');
+}
+
+// Copy
+function copy(btn){
+  const pre = btn.closest('pre');
+  const text = [...pre.childNodes]
+    .filter(n => n.nodeType === 3 || (n.nodeType === 1 && !n.classList.contains('copy-btn')))
+    .map(n => n.textContent).join('').trim();
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'copié !';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.textContent = 'copier'; btn.style.color = ''; }, 1500);
+  });
+}
+
+// Restore state
+function restore(){
+  Object.keys(S).forEach(id => {
+    if(!S[id]) return;
+    const el = document.getElementById(id);
+    if(!el) return;
+    el.classList.add('completed');
+    const status = el.querySelector('.step-status');
+    if(status) status.textContent = 'Terminé ✓';
+  });
+  updateProgress();
+  updateNav();
+}
+
+// Active nav on scroll
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      document.querySelectorAll('.nav-item').forEach(a => a.classList.remove('active'));
+      const link = document.querySelector(`.nav-item[href="#${e.target.id}"]`);
+      if(link) link.classList.add('active');
+    }
+  });
+}, { threshold: 0.3 });
+document.querySelectorAll('.chapter').forEach(c => observer.observe(c));
+
+restore();
+</script>
+</body>
+</html>
