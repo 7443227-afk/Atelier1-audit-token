@@ -28,28 +28,28 @@ pragma solidity ^0.8.20;
 //   💡 Indice : tous viennent de "@openzeppelin/contracts/token/erc20/..."
 //              et "@openzeppelin/contracts/access/Ownable.sol"
 
-// import "...";   ← remplacez ces lignes
-// import "...";
-// import "...";
-// import "...";
-// import "...";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Burnable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol";
 
 
 /**
  * @title AuditToken
- * @author <!-- TODO [2] : mettez votre nom / pseudonyme GitHub ici -->
+ * @author 7443227-afk
  *
  * TODO [2] — Rédigez les tags NatSpec manquants :
  *   @notice  (description courte pour les utilisateurs)
  *   @dev     (détails techniques pour les développeurs)
  *
- * @notice ???
- * @dev     ???
+ * @notice ERC-20 "audit-ready" avec burn, pause, contrôle d'accès owner/minter et support Permit (EIP-2612).
+ * @dev Hérite des modules OpenZeppelin ERC20, ERC20Burnable, ERC20Pausable, Ownable et ERC20Permit.
  */
 
 // TODO [3] — Déclarez le contrat en héritant de TOUS les contrats importés.
 //   💡 Syntaxe : contract NomContrat is A, B, C, D, E { ... }
-contract AuditToken /* is ??? */ {
+contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit {
 
     // ─────────────────────────────────────────────
     //  State variables
@@ -60,13 +60,13 @@ contract AuditToken /* is ??? */ {
     //   • Visibilité : public
     //   • Mutabilité : immutable  ← pourquoi immutable ? (répondez en commentaire)
     //   • 💡 Cette variable stocke le plafond absolu de tokens (en wei)
-    // ??? maxSupply;
+    uint256 public immutable maxSupply; // immutable: fixé au déploiement, non modifiable ensuite et moins coûteux en gas
 
     // TODO [5] — Déclarez minter :
     //   • Type    : address
     //   • Visibilité : public
     //   • 💡 Adresse autorisée à minter en plus du owner (peut être address(0))
-    // ??? minter;
+    address public minter;
 
     // ─────────────────────────────────────────────
     //  Events
