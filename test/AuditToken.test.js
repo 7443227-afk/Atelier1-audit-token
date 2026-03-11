@@ -66,28 +66,28 @@ describe("AuditToken", function () {
     // TODO [T1] — Vérifiez que decimals() retourne 18
     it("should set 18 decimals", async function () {
       const { token } = await loadFixture(deployFixture);
-      // 💡 expect(await token.decimals()).to.equal(???);
+      expect(await token.decimals()).to.equal(18);
     });
 
     // TODO [T2] — Vérifiez que maxSupply est correct
     //   💡 maxSupply stocke la valeur en wei (MAX_SUPPLY * ONE_TOKEN)
     it("should set maxSupply correctly", async function () {
       const { token, MAX_SUPPLY, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      expect(await token.maxSupply()).to.equal(MAX_SUPPLY * ONE_TOKEN);
     });
 
     // TODO [T3] — Vérifiez que le owner est bien le déployeur
     //   💡 owner() est une fonction héritée d'Ownable
     it("should set owner to deployer", async function () {
       const { token, owner } = await loadFixture(deployFixture);
-      // ???
+      expect(await token.owner()).to.equal(owner.address);
     });
 
     // TODO [T4] — Vérifiez que minter vaut address(0) par défaut
     //   💡 ethers.ZeroAddress représente "0x0000...0000"
     it("should have no minter by default", async function () {
       const { token } = await loadFixture(deployFixture);
-      // ???
+      expect(await token.minter()).to.equal(ethers.ZeroAddress);
     });
 
     // TODO [T5] — Vérifiez que le deploy échoue si initialSupply > maxSupply
@@ -96,7 +96,7 @@ describe("AuditToken", function () {
       const AuditToken = await ethers.getContractFactory("AuditToken");
       await expect(
         AuditToken.deploy("T", "T", 5000n, 100n) // 5000 > 100 → doit revert
-      ).to.be.revertedWithCustomError(AuditToken, /* TODO : nom de l'erreur */ "???");
+      ).to.be.revertedWithCustomError(AuditToken, "MaxSupplyExceeded");
     });
   });
 
@@ -130,14 +130,24 @@ describe("AuditToken", function () {
     //   💡 token.allowance(owner, spender) retourne le montant autorisé
     it("should update allowance via approve", async function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = 50n * ONE_TOKEN;
+
+      await token.connect(owner).approve(alice.address, amount);
+
+      expect(await token.allowance(owner.address, alice.address)).to.equal(amount);
     });
 
     // TODO [T7] — Vérifiez que transferFrom fonctionne dans la limite de l'allowance
     //   Scénario : owner approve alice, alice transferFrom owner vers bob
     it("should transferFrom within allowance", async function () {
       const { token, owner, alice, bob, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = 75n * ONE_TOKEN;
+
+      await token.connect(owner).approve(alice.address, amount);
+      await token.connect(alice).transferFrom(owner.address, bob.address, amount);
+
+      expect(await token.balanceOf(bob.address)).to.equal(amount);
+      expect(await token.allowance(owner.address, alice.address)).to.equal(0);
     });
 
     // TODO [T8] — Vérifiez que Transfer event est émis lors d'un transfer
@@ -146,7 +156,7 @@ describe("AuditToken", function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
       await expect(token.connect(owner).transfer(alice.address, ONE_TOKEN))
         .to.emit(token, "Transfer")
-        .withArgs(/* TODO : quels sont les 3 arguments d'un Transfer ERC-20 ? */);
+        .withArgs(owner.address, alice.address, ONE_TOKEN);
     });
   });
 
