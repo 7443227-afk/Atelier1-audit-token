@@ -262,20 +262,36 @@ describe("AuditToken", function () {
     //   💡 burn() réduit le balance ET le totalSupply
     it("should let holder burn their own tokens", async function () {
       const { token, owner, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = 10n * ONE_TOKEN;
+      const initialSupply = await token.totalSupply();
+
+      await token.connect(owner).burn(amount);
+
+      expect(await token.balanceOf(owner.address)).to.equal(990n * ONE_TOKEN);
+      expect(await token.totalSupply()).to.equal(initialSupply - amount);
     });
 
     // TODO [T16] — Vérifiez que burnFrom fonctionne avec allowance
     //   Scénario : owner approve alice, alice burnFrom(owner, amount)
     it("should let spender burnFrom within allowance", async function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      const amount = 20n * ONE_TOKEN;
+      const initialSupply = await token.totalSupply();
+
+      await token.connect(owner).approve(alice.address, amount);
+      await token.connect(alice).burnFrom(owner.address, amount);
+
+      expect(await token.balanceOf(owner.address)).to.equal(980n * ONE_TOKEN);
+      expect(await token.totalSupply()).to.equal(initialSupply - amount);
+      expect(await token.allowance(owner.address, alice.address)).to.equal(0);
     });
 
     // TODO [T17] — Vérifiez que burn échoue sans solde suffisant
     it("should revert burn with insufficient balance", async function () {
       const { token, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      await expect(
+        token.connect(alice).burn(ONE_TOKEN)
+      ).to.be.revertedWithCustomError(token, "ERC20InsufficientBalance");
     });
   });
 
@@ -303,20 +319,32 @@ describe("AuditToken", function () {
     // TODO [T18] — Vérifiez que unpause reprend les transferts
     it("should resume transfers after unpause", async function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      await token.connect(owner).pause();
+      await token.connect(owner).unpause();
+
+      await expect(token.connect(owner).transfer(alice.address, ONE_TOKEN))
+        .to.emit(token, "Transfer")
+        .withArgs(owner.address, alice.address, ONE_TOKEN);
     });
 
     // TODO [T19] — Vérifiez que mint est aussi bloqué pendant la pause
     it("should block mint when paused", async function () {
       const { token, owner, alice, ONE_TOKEN } = await loadFixture(deployFixture);
-      // ???
+      await token.connect(owner).pause();
+
+      await expect(
+        token.connect(owner).mint(alice.address, ONE_TOKEN)
+      ).to.be.revertedWithCustomError(token, "EnforcedPause");
     });
 
     // TODO [T20] — Vérifiez que pause() échoue si appelé par un non-owner
     //   💡 L'erreur Ownable s'appelle "OwnableUnauthorizedAccount"
     it("should revert pause from non-owner", async function () {
       const { token, alice } = await loadFixture(deployFixture);
-      // ???
+      await expect(
+        token.connect(alice).pause()
+      ).to.be.revertedWithCustomError(token, "OwnableUnauthorizedAccount")
+        .withArgs(alice.address);
     });
   });
 
