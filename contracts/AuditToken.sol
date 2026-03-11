@@ -83,8 +83,8 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //   💡 Convention : les events commencent par une majuscule,
     //      les paramètres importants sont "indexed" (filtrables off-chain)
 
-    // event MinterUpdated(???);
-    // event TokensMinted(???);
+    event MinterUpdated(address indexed previousMinter, address indexed newMinter);
+    event TokensMinted(address indexed to, uint256 amount);
 
     // ─────────────────────────────────────────────
     //  Custom Errors
@@ -100,10 +100,10 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //   💡 Syntaxe : error NomErreur(type param1, type param2);
     //   💡 Avantage gas : ~3x moins cher qu'un revert avec string
 
-    // error MaxSupplyExceeded(???);
-    // error Unauthorized(???);
-    // error ZeroAddress();
-    // error ZeroAmount();
+    error MaxSupplyExceeded(uint256 requested, uint256 available);
+    error Unauthorized(address caller);
+    error ZeroAddress();
+    error ZeroAmount();
 
     // ─────────────────────────────────────────────
     //  Modifiers
@@ -116,10 +116,12 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //
     //   💡 Rappel : owner() est une fonction héritée d'Ownable
 
-    // modifier onlyMinterOrOwner() {
-    //     ???
-    //     _;
-    // }
+    modifier onlyMinterOrOwner() {
+        if (msg.sender != owner() && msg.sender != minter) {
+            revert Unauthorized(msg.sender);
+        }
+        _;
+    }
 
     // ─────────────────────────────────────────────
     //  Constructor
@@ -129,11 +131,11 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
      * @notice Déploie le token et mint l'offre initiale au déployeur
      *
      * TODO [9] — Complétez le NatSpec :
-     * @dev ???
-     * @param name_         ???
-     * @param symbol_       ???
-     * @param initialSupply ???
-     * @param _maxSupply    ???
+     * @dev Initialise ERC20, ERC20Permit et Ownable. Convertit les montants en wei (18 décimales).
+     * @param name_         Nom du token
+     * @param symbol_       Symbole du token
+     * @param initialSupply Offre initiale en unités entières (avant décimales)
+     * @param _maxSupply    Offre maximale en unités entières (avant décimales)
      */
 
     // TODO [10] — Implémentez le constructor :
@@ -152,9 +154,27 @@ contract AuditToken is ERC20, ERC20Burnable, ERC20Pausable, Ownable, ERC20Permit
     //     3. Assigner maxSupply = _maxSupply * 10 ** decimals()
     //     4. Si initialSupply > 0, minter au msg.sender
 
-    // constructor(???) ??? {
-    //     ???
-    // }
+    constructor(string memory name_, string memory symbol_, uint256 initialSupply, uint256 _maxSupply)
+        ERC20(name_, symbol_)
+        ERC20Permit(name_)
+        Ownable(msg.sender)
+    {
+        if (_maxSupply == 0) revert ZeroAmount();
+
+        uint256 unit = 10 ** decimals();
+        uint256 maxSupplyWei = _maxSupply * unit;
+        uint256 initialSupplyWei = initialSupply * unit;
+
+        if (initialSupplyWei > maxSupplyWei) {
+            revert MaxSupplyExceeded(initialSupplyWei, maxSupplyWei);
+        }
+
+        maxSupply = maxSupplyWei;
+
+        if (initialSupply > 0) {
+            _mint(msg.sender, initialSupplyWei);
+        }
+    }
 
     // ─────────────────────────────────────────────
     //  Owner / Minter functions
